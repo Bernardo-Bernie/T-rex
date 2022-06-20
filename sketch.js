@@ -1,64 +1,159 @@
-var trex, trex_running, edges;
-var groundImage;
-var cloud, cloudImage;
+// Vari�vel Global
+var trex ,trex_running, trex_collided;
+var ground, groundImg, invisibleGround;
+var cloud, cloudImg;
+var cacto1, cacto2, cacto3, cacto4, cacto5, cacto6;
+var groupcloud, groupcacto;
+var restart, restartImg, gameOver, gameOverImg;
+var jumpSound, diedSound;
+
+const PLAY = 1;
+const END = 0;
+var gamestate = PLAY;
 
 function preload(){
-  trex_running = loadAnimation("trex1.png","trex3.png","trex4.png");
-  groundImage = loadImage("ground2.png");
-  cloudImage = loadImage("cloud.png");
+  trex_running = loadAnimation("trex1.png", "trex3.png", "trex4.png");
+  groundImg = loadImage("ground2.png");
+  cloudImg = loadImage("cloud.png");
+  cacto1 = loadImage("obstacle1.png");
+  cacto2 = loadImage("obstacle2.png");
+  cacto3 = loadImage("obstacle3.png");
+  cacto4 = loadImage("obstacle4.png");
+  cacto5 = loadImage("obstacle5.png");
+  cacto6 = loadImage("obstacle6.png");
+
+  trex_collided = loadAnimation("trex_collided.png");
+  restartImg = loadImage("restart.png");
+  gameOverImg = loadImage("gameOver.png");
 }
 
 function setup(){
-  createCanvas(600,200);
-  ground = createSprite (200,190,400,10);
-  ground.addImage (groundImage);
-  //criando o trex
+  createCanvas(600,200)
+  
+  //crie um sprite de trex
   trex = createSprite(50,160,20,50);
   trex.addAnimation("running", trex_running);
-  edges = createEdgeSprites();
-  
-  //adicione dimensão e posição ao trex
+  trex.addAnimation("collided", trex_collided);
   trex.scale = 0.5;
-  trex.x = 50;
-  ground.velocityX = -3;
+  
+  restart = createSprite(300, 100, 50, 50);
+  restart.addImage(restartImg);
+  restart.scale = 0.4;
+
+  gameOver = createSprite(300, 100, 50, 50);
+  gameOver.addImage(gameOverImg);
+  gameOver.scale = 0.8;
+
+  restart.visible = false;
+  gameOver.visible = false;
+
+  ground = createSprite(200, 180, 400, 20);
+  ground.addImage("ground", groundImg);
+
+  invisibleGround = createSprite(200,190,400,10);
+  invisibleGround.visible = false;
+
+  groupcloud = new Group();
+  groupcacto = new Group();
 }
 
-
 function draw(){
-  //definir a cor do plano de fundo 
-  background("white");
-
-  //registrando a posição y do trex
-  // console.log(trex.y);
+  background("black");
   
-  //pular quando tecla de espaço for pressionada
-  if(keyDown("space")){
-    trex.velocityY = -10;
+  if (gamestate === PLAY) {
+    ground.velocityX = -2 ;
+
+    if (keyDown('space') && trex.y >= 100) {
+      trex.velocityY = -10;
+    }
+  
+    // Resolve o problema do chao sumir
+    if (ground.x < 0) {
+      ground.x = ground.width / 2;
+      
+    }
+  
+    trex.velocityY = trex.velocityY + 0.5;
+  
+    createClouds();
+    createCactos();
+    
+    if (groupcacto.isTouching(trex)) {
+      gamestate = END;
+    }
+    
+  } else if(gamestate === END) {
+    ground.velocityX = 0;
+
+    restart.visible = true;
+    gameOver.visible = true;
+
+    trex.changeAnimation("collided", trex_collided);
+
+    groupcloud.setVelocityXEach(0);
+    groupcacto.setVelocityXEach(0);
+
+    if (mousePressedOver(restart)) {
+      reset();
+    }
   }
+
+  trex.collide(invisibleGround);
   
-  trex.velocityY = trex.velocityY + 0.5;
-  
-  if (ground.x<0){
-    ground.x =ground.width/2;
-
-  }
- //impedir que o trex caia
-  trex.collide(ground);
-
-  createClouds();
-
   drawSprites();
 }
 
-function createClouds()
+function reset()
 {
-  if (frameCount % 60 ===0){
-    var randNumber = Math.round(random(10,60));
+  gamestate = PLAY;
+  trex.changeAnimation("running", trex_collided);
+}
+
+function createClouds() {
+
+  if (frameCount % 60 === 0) {
     cloud = createSprite(600, 100, 40, 10);
-    cloud.addImage(cloudImage);
-    cloud.velocityX = -3;
+    cloud.addImage("cloud", cloudImg);
+    cloud.y = Math.round(random(10,  60));
     cloud.scale = 0.5;
-    cloud.y = randNumber;
-    
+    cloud.velocityX = -2;
+    cloud.lifetime = 300;
+    groupcloud.add(cloud);
   }
+}
+function createCactos() {
+var cacto;
+  if (frameCount % 60 === 0) {
+    cacto = createSprite(600, 160, 40, 10);
+    cacto.velocityX = -6;
+    var aleatorio = Math.round(random(1, 6));
+    switch (aleatorio) {
+      case 1:
+        cacto.addImage(cacto1);
+        break;
+      case 2:
+        cacto.addImage(cacto2);
+        break;
+      case 3:
+        cacto.addImage(cacto3);
+        break;
+      case 4:
+        cacto.addImage(cacto4);
+        break;
+      case 5:
+        cacto.addImage(cacto5);
+        break;
+      case 6:
+        cacto.addImage(cacto6);
+        break;
+    
+      default:
+        break;
+    }
+    cacto.scale = 0.5;
+    cacto.lifetime = 150;
+    groupcacto.add(cacto);
+
+  }
+  
 }
