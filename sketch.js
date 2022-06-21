@@ -1,4 +1,4 @@
-// Variável Global
+// Variï¿½vel Global
 var trex ,trex_running, trex_collided;
 var ground, groundImg, invisibleGround;
 var cloud, cloudImg;
@@ -6,6 +6,7 @@ var cacto1, cacto2, cacto3, cacto4, cacto5, cacto6;
 var groupcloud, groupcacto;
 var restart, restartImg, gameOver, gameOverImg;
 var jumpSound, diedSound;
+var score = 0;
 
 const PLAY = 1;
 const END = 0;
@@ -59,11 +60,11 @@ function setup(){
 
 function draw(){
   background("black");
-  
+  text("score: "+score,500,40);
   if (gamestate === PLAY) {
     ground.velocityX = -2 ;
 
-    if (keyDown('space') && trex.y >= 100) {
+    if (keyDown('space') && trex.y >= 150) {
       trex.velocityY = -10;
     }
   
@@ -92,7 +93,9 @@ function draw(){
 
     groupcloud.setVelocityXEach(0);
     groupcacto.setVelocityXEach(0);
-
+    groupcloud.setLifetimeEach(-1);
+    groupcacto.setLifetimeEach(-1);
+    
     if (mousePressedOver(restart)) {
       reset();
     }
@@ -107,6 +110,10 @@ function reset()
 {
   gamestate = PLAY;
   trex.changeAnimation("running", trex_collided);
+  restart.visible= false;
+  gameOver.visible= false;
+  groupcacto.destroyEach();
+  groupcloud.destroyEach();
 }
 
 function createClouds() {
